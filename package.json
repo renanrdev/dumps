@@ -19,8 +19,8 @@
     "build:cli": "npm run build --workspace=packages/cli"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.0",
-    "@cloudflare/workers-types": "^4.20250508.0",
+    "@cloudflare/vitest-pool-workers": "^0.16.10",
+    "@cloudflare/workers-types": "^4.20260529.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "semantic-release": "^25.0.0",
