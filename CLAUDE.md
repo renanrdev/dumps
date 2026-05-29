@@ -18,6 +18,18 @@ Run a single test file:
 npx vitest run test/scanner.test.ts
 ```
 
+### CLI (`packages/cli`)
+
+The CLI is a separate npm package published as **`@renanrdev/dumps`** (binary: `dumps`).
+
+```bash
+npm run build:cli                    # bundle packages/cli → dist/cli.js (tsup)
+cd packages/cli && npm run typecheck # type-check the CLI only
+cd packages/cli && npm publish       # publish to npm (scoped, public access)
+```
+
+Bump `packages/cli/package.json` `version` before publishing — npm rejects re-publishing an existing version. The version string is injected into the bundle by tsup at build time (`__CLI_VERSION__`).
+
 ## Architecture
 
 TypeScript Cloudflare Workers project following Clean Architecture. Dependencies flow inward: `handlers → application → domain ← infrastructure`.
@@ -40,7 +52,12 @@ src/
   handlers/
     create.ts / get.ts / delete.ts / health.ts
     shared.ts           — securityHeaders() and htmlSecurityHeaders() (CSP, HSTS, etc.)
+packages/cli/           — npm package `@renanrdev/dumps` (binary `dumps`), Node 18+, zero runtime deps
+  src/cli.ts            — single-file CLI: stdin upload, get, delete, config; manual arg parsing
+  dist/cli.js           — tsup bundle (the published bin)
 ```
+
+**CLI** (`packages/cli/src/cli.ts`): talks to the same HTTP API as `curl`. Default endpoint is `https://dumps.sh`, overridable via `~/.dumps/config.json` (`dumps config set url …`) — note this config file takes precedence over the default, so a stale `http://localhost:8787` left from `wrangler dev` will silently redirect uploads. Deletion tokens are auto-saved to `~/.dumps/tokens.json` (chmod 600) on upload.
 
 **Cloudflare bindings** (wrangler.toml → Env interface in index.ts):
 - `PASTE_BUCKET` → R2 (blobs stored at key `blob/{id}`)
