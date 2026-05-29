@@ -128,33 +128,54 @@ function landingPage(): Response {
   <p class="tagline">pastebin CLI-first · no account · ephemeral by default · secrets masked</p>
 
   <div class="section">
-    <div class="section-label">quick start</div>
+    <div class="section-label">curl</div>
     <div class="card">
       <code>cat error.log | curl --data-binary @- https://dumps.sh</code>
       <code class="dim"># → https://dumps.sh/k3x9Qz7m2P</code>
     </div>
-  </div>
-
-  <div class="section">
-    <div class="section-label">with options</div>
     <div class="card">
-      <code>kubectl describe pod x | curl --data-binary @- <span class="accent">"https://dumps.sh?ttl=1h"</span></code>
+      <code>kubectl logs pod/x | curl --data-binary @- <span class="accent">"https://dumps.sh?ttl=1h"</span></code>
     </div>
     <div class="card">
-      <code>echo "$DB_PASSWORD" | curl --data-binary @- <span class="accent">"https://dumps.sh?burn=1"</span></code>
+      <code>echo "$SECRET" | curl --data-binary @- <span class="accent">"https://dumps.sh?burn=1"</span></code>
       <code class="dim"># destroyed after first read</code>
     </div>
     <div class="card">
       <code>make test 2>&amp;1 | curl --data-binary @- <span class="accent">"https://dumps.sh?redact=block"</span></code>
       <code class="dim"># 422 if secrets detected</code>
     </div>
+    <div class="card">
+      <code><span class="dim"># read raw content</span></code>
+      <code>curl https://dumps.sh/raw/k3x9Qz7m2P</code>
+    </div>
+    <div class="card">
+      <code><span class="dim"># delete (token returned in X-Deletion-Token header on create)</span></code>
+      <code>curl -X DELETE -H <span class="accent">"X-Deletion-Token: del_xxx"</span> https://dumps.sh/k3x9Qz7m2P</code>
+    </div>
   </div>
 
   <div class="section">
-    <div class="section-label">auto-redaction</div>
+    <div class="section-label">npm cli — @renanrdev/dumps</div>
     <div class="card">
-      <code>echo "AKIAIOSFODNN7EXAMPLE" | curl --data-binary @- https://dumps.sh</code>
-      <code class="dim"># stored as ‹REDACTED:aws_access_key_id›</code>
+      <code>npm i -g @renanrdev/dumps</code>
+    </div>
+    <div class="card">
+      <code>cat error.log | dumps</code>
+      <code class="dim"># → https://dumps.sh/k3x9Qz7m2P</code>
+    </div>
+    <div class="card">
+      <code>cat error.log | dumps <span class="accent">--ttl=1h --redact=block</span></code>
+    </div>
+    <div class="card">
+      <code>echo "$SECRET" | dumps <span class="accent">--burn</span></code>
+    </div>
+    <div class="card">
+      <code><span class="dim"># read paste to stdout</span></code>
+      <code>dumps get k3x9Qz7m2P</code>
+    </div>
+    <div class="card">
+      <code><span class="dim"># delete (token auto-saved on upload to ~/.dumps/tokens.json)</span></code>
+      <code>dumps delete k3x9Qz7m2P</code>
     </div>
   </div>
 
@@ -165,6 +186,14 @@ function landingPage(): Response {
       <code><span class="accent">?redact</span>=warn|mask|block  <span class="dim">(default: mask)</span></code>
       <code><span class="accent">?burn</span>=1                  <span class="dim">(destroy after first read)</span></code>
       <code><span class="accent">?lang</span>=yaml|json|...      <span class="dim">(language hint)</span></code>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">auto-redaction</div>
+    <div class="card">
+      <code>echo "AKIAIOSFODNN7EXAMPLE" | curl --data-binary @- https://dumps.sh</code>
+      <code class="dim"># stored as ‹REDACTED:aws_access_key_id›</code>
     </div>
   </div>
 

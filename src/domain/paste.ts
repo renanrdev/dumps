@@ -59,6 +59,22 @@ export function parseRedactMode(raw: string | null): RedactionMode {
   return valid.includes(raw as RedactionMode) ? (raw as RedactionMode) : "mask";
 }
 
+/**
+ * Resolve the effective redaction mode for a create request.
+ *
+ * Burn-after-read pastes exist to share a secret exactly once, so masking the
+ * secret would defeat their entire purpose. When the caller gives no explicit
+ * redaction mode, `burn` implies "warn" (store the content verbatim). An
+ * explicit mode always wins — `?burn=1&redact=block` still blocks.
+ */
+export function resolveRedactMode(
+  raw: string | null,
+  burn: boolean
+): RedactionMode {
+  if (raw === null && burn) return "warn";
+  return parseRedactMode(raw);
+}
+
 /** Detect a rough language hint from content for display purposes. */
 export function detectLang(content: string, hint?: string): string {
   // Strip control characters (incl. CR/LF) before using in HTTP headers.
