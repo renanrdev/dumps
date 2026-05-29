@@ -1,0 +1,66 @@
+# wrangler.toml — dumps.sh Cloudflare Workers configuration
+#
+# Before deploying, create the KV namespace and R2 bucket:
+#   wrangler kv namespace create PASTE_META
+#   wrangler r2 bucket create dumps-paste-blobs
+#
+# Then fill in the KV namespace ID below.
+
+name = "dumps-sh"
+main = "src/index.ts"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------------------------------------------------------------------------
+# R2 — blob storage (egress-zero; lifecycle rules handle TTL backstop)
+# ---------------------------------------------------------------------------
+[[r2_buckets]]
+binding = "PASTE_BUCKET"
+bucket_name = "dumps-paste-blobs"
+# preview_bucket_name = "dumps-paste-blobs-dev"  # uncomment for wrangler dev
+
+# ---------------------------------------------------------------------------
+# KV — paste metadata + TTL
+# Replace <PASTE_META_KV_ID> with the output of: wrangler kv namespace create PASTE_META
+# ---------------------------------------------------------------------------
+[[kv_namespaces]]
+binding = "PASTE_META"
+id = "78066e068b6f452ab2530492b57cceea"
+# preview_id = "78066e068b6f452ab2530492b57cceea"  # uncomment for wrangler dev
+
+# ---------------------------------------------------------------------------
+# Durable Objects — per-IP rate limiter (one DO instance per IP)
+# ---------------------------------------------------------------------------
+[durable_objects]
+bindings = [
+  { name = "RATE_LIMITER", class_name = "RateLimiterDO" }
+]
+
+# New class migration — required first time deploying a new DO class.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiterDO"]
+
+# ---------------------------------------------------------------------------
+# Environment variables
+# ---------------------------------------------------------------------------
+[vars]
+# BASE_URL is optional; the Worker defaults to the request's origin.
+# BASE_URL = "https://dumps.sh"
+
+# ---------------------------------------------------------------------------
+# Build
+# ---------------------------------------------------------------------------
+[build]
+command = "npm run build"
+
+# ---------------------------------------------------------------------------
+# Environments
+# ---------------------------------------------------------------------------
+[env.staging]
+name = "dumps-sh-staging"
+vars = { BASE_URL = "https://staging.dumps.sh" }
+
+[env.production]
+name = "dumps-sh"
+vars = { BASE_URL = "https://dumps.sh" }

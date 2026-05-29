@@ -1,0 +1,11 @@
+# Source
+src/
+
+# Build tooling
+tsup.config.ts
+tsconfig.json
+
+# Dev
+node_modules/
+*.log
+.DS_Store

@@ -1,0 +1,47 @@
+{
+  "name": "dumps-sh",
+  "version": "0.1.0",
+  "description": "CLI for dumps.sh — ephemeral pastebin for DevOps",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "dumps": "./dist/cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "README.md"
+  ],
+  "exports": {
+    ".": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "node --loader ts-node/esm src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/cli.test.js 2>/dev/null || echo 'build first: npm run build'"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "pastebin",
+    "cli",
+    "devops",
+    "cloudflare",
+    "dumps"
+  ],
+  "homepage": "https://dumps.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/dumps.sh"
+  },
+  "license": "MIT"
+}

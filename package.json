@@ -1,0 +1,29 @@
+{
+  "name": "dumps-sh-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI-first pastebin for DevOps — ephemeral, secret-aware.",
+  "type": "module",
+  "workspaces": [
+    "packages/cli"
+  ],
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "types": "wrangler types",
+    "build:cli": "npm run build --workspace=packages/cli",
+    "release:cli": "npm run build --workspace=packages/cli && npm publish --workspace=packages/cli"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20250508.0",
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.0",
+    "wrangler": "^4.0.0"
+  }
+}
