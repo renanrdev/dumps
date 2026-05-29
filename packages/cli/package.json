@@ -1,6 +1,6 @@
 {
   "name": "@renanrdev/dumps",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI for dumps.sh — ephemeral pastebin CLI-first",
   "type": "module",
   "engines": {
