@@ -1,5 +1,5 @@
 /**
- * dumps-sh CLI
+ * dumps CLI (@renanrdev/dumps)
  *
  * Usage:
  *   echo "hello" | dumps
@@ -579,7 +579,7 @@ function cliVersion(): string {
 }
 
 function cmdVersion(): void {
-  stdout(`dumps-sh ${cliVersion()}`);
+  stdout(`dumps ${cliVersion()}`);
 }
 
 // ---------------------------------------------------------------------------

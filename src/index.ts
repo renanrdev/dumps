@@ -101,7 +101,7 @@ function landingPage(): Response {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dumps.sh — pastebin for DevOps</title>
+<title>dumps.sh — pastebin CLI-first</title>
 <style>
   *{box-sizing:border-box}
   body{font-family:'SF Mono',ui-monospace,monospace;background:#111;color:#d4d4d4;margin:0;padding:0;min-height:100vh;display:flex;flex-direction:column}
@@ -125,7 +125,7 @@ function landingPage(): Response {
 <body>
 <main>
   <h1 class="logo"><em>dumps</em>.sh</h1>
-  <p class="tagline">pastebin CLI-first for DevOps · no account · ephemeral by default · secrets masked</p>
+  <p class="tagline">pastebin CLI-first · no account · ephemeral by default · secrets masked</p>
 
   <div class="section">
     <div class="section-label">quick start</div>

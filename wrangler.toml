@@ -63,4 +63,30 @@ vars = { BASE_URL = "https://staging.dumps.sh" }
 
 [env.production]
 name = "dumps-sh"
+workers_dev = false
 vars = { BASE_URL = "https://dumps.sh" }
+
+[[env.production.routes]]
+pattern = "dumps.sh/*"
+zone_name = "dumps.sh"
+
+[[env.production.routes]]
+pattern = "www.dumps.sh/*"
+zone_name = "dumps.sh"
+
+[[env.production.r2_buckets]]
+binding = "PASTE_BUCKET"
+bucket_name = "dumps-paste-blobs"
+
+[[env.production.kv_namespaces]]
+binding = "PASTE_META"
+id = "78066e068b6f452ab2530492b57cceea"
+
+[env.production.durable_objects]
+bindings = [
+  { name = "RATE_LIMITER", class_name = "RateLimiterDO" }
+]
+
+[[env.production.migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiterDO"]

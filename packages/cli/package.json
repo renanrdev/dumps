@@ -1,7 +1,7 @@
 {
-  "name": "dumps-sh",
-  "version": "0.1.0",
-  "description": "CLI for dumps.sh — ephemeral pastebin for DevOps",
+  "name": "@renanrdev/dumps",
+  "version": "0.1.1",
+  "description": "CLI for dumps.sh — ephemeral pastebin CLI-first",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
@@ -41,7 +41,7 @@
   "homepage": "https://dumps.sh",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/dumps.sh"
+    "url": "https://github.com/renanrdev/dumps.git"
   },
   "license": "MIT"
 }

@@ -36,7 +36,7 @@ Compartilhar artefatos de operação hoje cai em dois baldes ruins: colar direto
 ### Com o CLI `dumps` (recomendado)
 
 ```bash
-npm install -g dumps-sh
+npm install -g @renanrdev/dumps
 ```
 
 ```bash
@@ -76,8 +76,8 @@ echo "$DB_PASSWORD" | curl --data-binary @- "https://dumps.sh?burn=1"
 ### Instalação
 
 ```bash
-npm install -g dumps-sh   # instala globalmente
-npx dumps-sh --help       # sem instalar
+npm install -g @renanrdev/dumps   # instala globalmente
+npx @renanrdev/dumps --help       # sem instalar
 ```
 
 ### Uso
@@ -115,7 +115,7 @@ O CLI salva os tokens de deleção automaticamente em `~/.dumps/tokens.json` (pe
 ```bash
 # Criação salva o token automaticamente
 cat log.txt | dumps
-# → http://dumps.sh/k3x9Qz7m2P
+# → https://dumps.sh/k3x9Qz7m2P
 # → Deletion token saved to ~/.dumps/tokens.json (id: k3x9Qz7m2P)
 
 # Deleção usa o token salvo
@@ -341,7 +341,7 @@ dumps/
 │       ├── create.ts / get.ts / delete.ts / health.ts
 │       └── shared.ts           — securityHeaders(), htmlSecurityHeaders()
 ├── packages/
-│   └── cli/                    — pacote npm `dumps-sh`
+│   └── cli/                    — pacote npm `@renanrdev/dumps` (binário `dumps`)
 │       └── src/cli.ts          — CLI TypeScript (Node 18+, zero deps runtime)
 └── test/                       — Vitest (Node environment, fakes em memória)
 ```

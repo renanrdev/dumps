@@ -32,6 +32,9 @@ coverage/
 *.swo
 .DS_Store
 
+# npm auth
+.npmrc
+
 # Logs
 *.log
 npm-debug.log*
