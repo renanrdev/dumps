@@ -1,7 +1,7 @@
 // test/paste.test.ts — Unit tests for domain/paste.ts helpers.
 
 import { describe, it, expect } from "vitest";
-import { parseTTL, parseRedactMode, detectLang, DEFAULT_TTL } from "../src/domain/paste.js";
+import { parseTTL, parseRedactMode, resolveRedactMode, detectLang, DEFAULT_TTL } from "../src/domain/paste.js";
 
 describe("parseTTL", () => {
   it("returns DEFAULT_TTL for null", () => {
@@ -47,6 +47,27 @@ describe("parseRedactMode", () => {
     expect(parseRedactMode("MASK")).toBe("mask"); // case-sensitive
     expect(parseRedactMode("redact")).toBe("mask");
     expect(parseRedactMode("none")).toBe("mask");
+  });
+});
+
+describe("resolveRedactMode", () => {
+  it("defaults to mask when no mode and no burn", () => {
+    expect(resolveRedactMode(null, false)).toBe("mask");
+  });
+
+  it("implies warn for burn when no explicit mode is given", () => {
+    expect(resolveRedactMode(null, true)).toBe("warn");
+  });
+
+  it("lets an explicit mode override burn", () => {
+    expect(resolveRedactMode("block", true)).toBe("block");
+    expect(resolveRedactMode("mask", true)).toBe("mask");
+    expect(resolveRedactMode("warn", true)).toBe("warn");
+  });
+
+  it("falls back to parseRedactMode for invalid explicit values (even with burn)", () => {
+    // An invalid string is still "explicit" input → mask, not the burn default.
+    expect(resolveRedactMode("none", true)).toBe("mask");
   });
 });
 

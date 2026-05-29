@@ -598,6 +598,49 @@ describe("?burn=1 — destroy after first read", () => {
     expect(meta.burn).toBe(true);
   });
 
+  it("stores a secret verbatim (burn implies no masking)", async () => {
+    const env = makeEnvWithState();
+    const createRes = await worker.fetch(
+      new Request("https://dumps.sh/?burn=1", {
+        method: "POST",
+        body: "AKIAIOSFODNN7EXAMPL3",
+        headers: { "User-Agent": "curl/8.1.2" },
+      }),
+      env,
+      ctx
+    );
+
+    const url = (await createRes.text()).trim();
+    const id = url.split("/").pop()!;
+
+    // The stored blob is the raw secret, NOT a ‹REDACTED:…› placeholder —
+    // burn-after-read implies warn mode so the credential can be shared.
+    const r2 = env.PASTE_BUCKET as unknown as FakeR2Bucket;
+    const blob = await r2.get(`blob/${id}`);
+    const stored = new TextDecoder().decode(await blob!.arrayBuffer());
+    expect(stored).toBe("AKIAIOSFODNN7EXAMPL3");
+
+    const readRes = await worker.fetch(
+      new Request(`https://dumps.sh/raw/${id}`),
+      env,
+      ctx
+    );
+    expect(await readRes.text()).toBe("AKIAIOSFODNN7EXAMPL3");
+  });
+
+  it("still blocks secrets when burn is combined with explicit redact=block", async () => {
+    const res = await worker.fetch(
+      new Request("https://dumps.sh/?burn=1&redact=block", {
+        method: "POST",
+        body: "AKIAIOSFODNN7EXAMPL3",
+        headers: { "User-Agent": "curl/8.1.2" },
+      }),
+      makeEnv(),
+      ctx
+    );
+    expect(res.status).toBe(422);
+  });
+
   it("first raw read returns content", async () => {
     const env = makeEnvWithState();
     const createRes = await worker.fetch(

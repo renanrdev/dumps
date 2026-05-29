@@ -138,7 +138,7 @@ function landingPage(): Response {
     </div>
     <div class="card">
       <code>echo "$SECRET" | curl --data-binary @- <span class="accent">"https://dumps.sh?burn=1"</span></code>
-      <code class="dim"># destroyed after first read</code>
+      <code class="dim"># shown verbatim, then destroyed after first read</code>
     </div>
     <div class="card">
       <code>make test 2>&amp;1 | curl --data-binary @- <span class="accent">"https://dumps.sh?redact=block"</span></code>
@@ -168,6 +168,7 @@ function landingPage(): Response {
     </div>
     <div class="card">
       <code>echo "$SECRET" | dumps <span class="accent">--burn</span></code>
+      <code class="dim"># shared as-is (not masked), gone after first read</code>
     </div>
     <div class="card">
       <code><span class="dim"># read paste to stdout</span></code>
@@ -184,7 +185,7 @@ function landingPage(): Response {
     <div class="card">
       <code><span class="accent">?ttl</span>=10m|1h|1d|7d|30d   <span class="dim">(default: 1d)</span></code>
       <code><span class="accent">?redact</span>=warn|mask|block  <span class="dim">(default: mask)</span></code>
-      <code><span class="accent">?burn</span>=1                  <span class="dim">(destroy after first read)</span></code>
+      <code><span class="accent">?burn</span>=1                  <span class="dim">(verbatim, destroyed after first read)</span></code>
       <code><span class="accent">?lang</span>=yaml|json|...      <span class="dim">(language hint)</span></code>
     </div>
   </div>

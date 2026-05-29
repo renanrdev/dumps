@@ -1,6 +1,6 @@
 // handlers/create.ts — POST /
 
-import { parseTTL, parseRedactMode } from "../domain/paste.js";
+import { parseTTL, resolveRedactMode } from "../domain/paste.js";
 import { createPaste } from "../application/create_paste.js";
 import { checkRateLimit } from "../infrastructure/rate_limiter.js";
 import { R2BlobStore } from "../infrastructure/blob_store.js";
@@ -63,10 +63,12 @@ export async function handleCreate(
   // 3. Parse query params.
   const url = new URL(req.url);
   const ttl = parseTTL(url.searchParams.get("ttl"));
-  const redactMode = parseRedactMode(url.searchParams.get("redact"));
+  const burn = url.searchParams.get("burn") === "1";
+  // Burn-after-read is for sharing a secret once, so masking it would defeat
+  // the purpose: when no explicit mode is given, burn implies "warn" (verbatim).
+  const redactMode = resolveRedactMode(url.searchParams.get("redact"), burn);
   const langHintRaw = url.searchParams.get("lang");
   const langHint: string | undefined = langHintRaw !== null ? langHintRaw : undefined;
-  const burn = url.searchParams.get("burn") === "1";
 
   // 4. Determine base URL for the paste URL returned to caller.
   const baseUrl = `${url.protocol}//${url.host}`;

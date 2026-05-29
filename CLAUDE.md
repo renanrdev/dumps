@@ -70,6 +70,8 @@ packages/cli/           — npm package `@renanrdev/dumps` (binary `dumps`), Nod
 
 **Secret scanner**: regex rules in `domain/scanner.ts`. Each rule captures the secret in group 1; the scan engine replaces only that capture. Three modes: `warn` (no change), `mask` (default, replaces with `‹REDACTED:type›`), `block` (rejects with 422). Scanner runs server-side on every paste; the same domain code is intended for client-side use too.
 
+**Burn-after-read defaults to `warn`**: `?burn=1` (CLI `--burn`) is for sharing a secret exactly once, so masking it would defeat the purpose. When no explicit `redact` mode is given, `resolveRedactMode` (in `domain/paste.ts`, called from `handlers/create.ts`) makes burn imply `warn` — content stored verbatim. An explicit mode always wins (`?burn=1&redact=block` still blocks). Note `warn` still records `redaction_applied=true` in metadata (secrets *detected*, not masked), so the view badge / CLI still report detected types.
+
 **Tests** use Vitest in Node environment with in-memory fakes (no real R2/KV). Tests for the infrastructure adapters against real bindings would require `@cloudflare/vitest-pool-workers`.
 
 ## Key invariants
