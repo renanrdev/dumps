@@ -25,10 +25,11 @@ The CLI is a separate npm package published as **`@renanrdev/dumps`** (binary: `
 ```bash
 npm run build:cli                    # bundle packages/cli → dist/cli.js (tsup)
 cd packages/cli && npm run typecheck # type-check the CLI only
-cd packages/cli && npm publish       # publish to npm (scoped, public access)
 ```
 
-Bump `packages/cli/package.json` `version` before publishing — npm rejects re-publishing an existing version. The version string is injected into the bundle by tsup at build time (`__CLI_VERSION__`).
+**Releases are automated** via `.github/workflows/release.yml` (manual `workflow_dispatch`) + `semantic-release` (`.releaserc.json`). Versioning is driven by Conventional Commits since the last `v*` git tag — `feat:` → minor, `fix:` → patch. The pipeline: probes the next version → bumps `packages/cli/package.json` and builds → publishes `@renanrdev/dumps` to npm **with provenance** → `semantic-release` commits the bump + `CHANGELOG.md` back, tags `vX.Y.Z`, and creates the GitHub Release. The version is injected into the bundle by tsup at build time (`__CLI_VERSION__`). Requires the `NPM_TOKEN` repo secret (npm "Automation" token); `GITHUB_TOKEN` is provided automatically.
+
+Do **not** hand-bump `version` or run `npm publish` manually — semantic-release owns versioning. For a one-off manual publish, build first (`npm run build:cli`) since `npm publish` alone ships whatever stale `dist/` exists.
 
 ## Architecture
 

@@ -16,12 +16,14 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "types": "wrangler types",
-    "build:cli": "npm run build --workspace=packages/cli",
-    "release:cli": "npm run build --workspace=packages/cli && npm publish --workspace=packages/cli"
+    "build:cli": "npm run build --workspace=packages/cli"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.0",
     "@cloudflare/workers-types": "^4.20250508.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^25.0.0",
     "typescript": "^5.4.5",
     "vitest": "^2.0.0",
     "wrangler": "^4.0.0"

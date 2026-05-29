@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # semantic-release verifies push access even on dry-run
+    outputs:
+      should_release: ${{ steps.probe.outputs.should_release }}
+      version: ${{ steps.probe.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Probe semantic-release
+        id: probe
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          npx semantic-release --dry-run --no-ci 2>&1 | tee semantic-release.log
+
+          if grep -qi "the next release version is" semantic-release.log; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            VERSION=$(grep -oiE "the next release version is [0-9]+\.[0-9]+\.[0-9]+" semantic-release.log | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish-npm:
+    name: Publish npm
+    needs: preflight
+    if: needs.preflight.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance attestation
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure npm registry
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Inject the computed version so tsup bakes it into the bundle
+      # (__CLI_VERSION__ is read from package.json at build time).
+      - name: Set CLI package version
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: npm version "$VERSION" --no-git-tag-version --allow-same-version --workspace=packages/cli
+
+      - name: Build CLI bundle
+        run: npm run build:cli
+
+      - name: Publish to npm (with provenance)
+        working-directory: packages/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          if npm view "@renanrdev/dumps@$VERSION" version >/dev/null 2>&1; then
+            echo "Version $VERSION already published, skipping."
+          else
+            npm publish --provenance --access public
+          fi
+
+  release:
+    name: Create GitHub release
+    needs: [preflight, publish-npm]
+    if: needs.preflight.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the git tag + GitHub release
+      issues: write # semantic-release comments on released issues/PRs
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
