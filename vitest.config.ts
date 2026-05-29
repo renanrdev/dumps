@@ -6,6 +6,8 @@ export default defineConfig({
     // These tests use in-memory fakes and don't need the Workers runtime.
     environment: "node",
     include: ["test/**/*.test.ts"],
+    // Shim the `crypto` global for the Node 18 CI matrix (see test/setup.ts).
+    setupFiles: ["./test/setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
