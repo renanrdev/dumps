@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported (CLI engines: node >=18) + current LTS + latest.
+        node-version: ["18", "20", "22"]
+    name: node ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # Reproducible install from the committed lockfile — never resolves fresh.
+      - name: Install
+        run: npm ci
+
+      - name: Type-check worker
+        run: npm run build
+
+      - name: Type-check CLI
+        run: npm run typecheck --workspace=packages/cli
+
+      # Ensure the published bundle actually builds (catches tsup/entry breakage).
+      - name: Build CLI bundle
+        run: npm run build:cli
+
+      - name: Test
+        run: npm test

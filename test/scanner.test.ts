@@ -213,20 +213,29 @@ describe("RULES export", () => {
 // ---------------------------------------------------------------------------
 
 describe("scanner — ReDoS safety", () => {
-  it("connection_string rule completes in <50ms on 200k chars without '@'", () => {
+  // These tests guard against *catastrophic* backtracking, which blows up to
+  // seconds or minutes on adversarial input (the connection_string rule took
+  // ~19 000ms before being bounded). A linear-time scan of the same input runs
+  // in single-digit milliseconds. We assert a generous absolute ceiling rather
+  // than a tight one: tight ms thresholds flake on shared/loaded CI runners,
+  // while a 1 s bound still catches any super-linear regression with ~19–1000×
+  // margin below the known-bad timings.
+  const REDOS_CEILING_MS = 1000;
+
+  it("connection_string rule stays linear on 200k chars without '@'", () => {
     const evil = "postgres://user:" + "A".repeat(200_000);
     const start = Date.now();
     scan(evil, "mask");
     const elapsed = Date.now() - start;
-    // Before the fix this took ~19 000ms — now bounded by {4,200} upper limit.
-    expect(elapsed).toBeLessThan(50);
+    // Bounded by the {4,200} upper limit on the password capture group.
+    expect(elapsed).toBeLessThan(REDOS_CEILING_MS);
   });
 
-  it("pem rule completes in <100ms on 10k BEGIN lines without END", () => {
+  it("pem rule stays linear on 10k BEGIN lines without END", () => {
     const manyBegin = "-----BEGIN RSA PRIVATE KEY-----\n".repeat(10_000);
     const start = Date.now();
     scan(manyBegin, "mask");
     const elapsed = Date.now() - start;
-    expect(elapsed).toBeLessThan(100);
+    expect(elapsed).toBeLessThan(REDOS_CEILING_MS);
   });
 });

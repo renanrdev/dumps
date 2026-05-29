@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # npm — covers the root workspace and packages/cli via the root lockfile.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR per week for routine minor/patch bumps to keep noise low;
+      # majors stay separate so breaking changes get individual review.
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Keep the GitHub Actions used in workflows up to date (pinned action versions).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - "*"

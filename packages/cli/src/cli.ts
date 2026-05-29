@@ -12,6 +12,7 @@
 import { readFile, writeFile, mkdir, chmod } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { parseArgs, UsageError, type ParsedArgs } from "./args.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -21,12 +22,6 @@ const DEFAULT_API_URL = "https://dumps.sh";
 const CONFIG_DIR = join(homedir(), ".dumps");
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 const TOKENS_FILE = join(CONFIG_DIR, "tokens.json");
-
-const VALID_TTL = ["10m", "1h", "1d", "7d", "30d"] as const;
-const VALID_REDACT = ["warn", "mask", "block"] as const;
-
-type TTLOption = (typeof VALID_TTL)[number];
-type RedactOption = (typeof VALID_REDACT)[number];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -139,132 +134,6 @@ async function readStdin(): Promise<Buffer> {
       reject(err);
     });
   });
-}
-
-// ---------------------------------------------------------------------------
-// Arg parsing — manual, no dependencies
-// ---------------------------------------------------------------------------
-
-interface ParsedArgs {
-  command: "upload" | "get" | "delete" | "config" | "help" | "version";
-  // upload flags
-  ttl?: TTLOption;
-  redact?: RedactOption;
-  burn?: boolean;
-  lang?: string;
-  // get/delete
-  pasteId?: string;
-  // delete
-  token?: string;
-  // config sub-command
-  configAction?: "set" | "get";
-  configKey?: string;
-  configValue?: string;
-}
-
-function parseArgs(argv: string[]): ParsedArgs {
-  // Strip node + script path when running via ts-node / node directly.
-  const args = argv.slice(2);
-
-  if (args.length === 0) {
-    // No args: we'll check stdin below.
-    return { command: "upload" };
-  }
-
-  const first = args[0];
-
-  // Subcommands.
-  if (first === "get" || first === "fetch") {
-    const pasteId = args[1];
-    if (!pasteId) die("Usage: dumps get <paste-id>");
-    return { command: "get", pasteId };
-  }
-
-  if (first === "delete" || first === "rm") {
-    const pasteId = args[1];
-    if (!pasteId) die("Usage: dumps delete <paste-id> [--token=<del_token>]");
-    const token = extractFlag(args, "--token");
-    const result: ParsedArgs = { command: "delete", pasteId };
-    if (token !== null) result.token = token;
-    return result;
-  }
-
-  if (first === "config") {
-    const action = args[1];
-    if (action !== "set" && action !== "get") {
-      die("Usage: dumps config set <key> <value>\n       dumps config get <key>");
-    }
-    const configKey = args[2];
-    if (!configKey) die("Usage: dumps config set <key> <value>");
-    const configValue = action === "set" ? args[3] : undefined;
-    if (action === "set" && !configValue) die("Usage: dumps config set <key> <value>");
-    const result: ParsedArgs = { command: "config", configAction: action, configKey };
-    if (configValue !== undefined) result.configValue = configValue;
-    return result;
-  }
-
-  if (first === "--help" || first === "-h" || first === "help") {
-    return { command: "help" };
-  }
-
-  if (first === "--version" || first === "-v" || first === "version") {
-    return { command: "version" };
-  }
-
-  // Upload flags — no subcommand, treat remaining args as flags.
-  const parsed: ParsedArgs = { command: "upload" };
-
-  const rawTtl = extractFlag(args, "--ttl") ?? extractFlag(args, "-ttl");
-  if (rawTtl) {
-    if (!(VALID_TTL as readonly string[]).includes(rawTtl)) {
-      die(`Invalid --ttl value "${rawTtl}". Valid: ${VALID_TTL.join(", ")}`);
-    }
-    parsed.ttl = rawTtl as TTLOption;
-  }
-
-  const rawRedact = extractFlag(args, "--redact") ?? extractFlag(args, "-redact");
-  if (rawRedact) {
-    if (!(VALID_REDACT as readonly string[]).includes(rawRedact)) {
-      die(`Invalid --redact value "${rawRedact}". Valid: ${VALID_REDACT.join(", ")}`);
-    }
-    parsed.redact = rawRedact as RedactOption;
-  }
-
-  if (args.includes("--burn") || args.includes("-burn")) {
-    parsed.burn = true;
-  }
-
-  const rawLang = extractFlag(args, "--lang") ?? extractFlag(args, "-lang");
-  if (rawLang) {
-    parsed.lang = rawLang;
-  }
-
-  return parsed;
-}
-
-/**
- * Extract a flag value from an args array.
- * Handles both "--flag=value" and "--flag value" forms.
- */
-function extractFlag(args: string[], flag: string): string | null {
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (!arg) continue;
-
-    // --flag=value form
-    if (arg.startsWith(flag + "=")) {
-      return arg.slice(flag.length + 1);
-    }
-
-    // --flag value form
-    if (arg === flag) {
-      const next = args[i + 1];
-      if (next && !next.startsWith("-")) {
-        return next;
-      }
-    }
-  }
-  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -587,7 +456,13 @@ function cmdVersion(): void {
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const parsed = parseArgs(process.argv);
+  let parsed: ParsedArgs;
+  try {
+    parsed = parseArgs(process.argv);
+  } catch (err) {
+    if (err instanceof UsageError) die(err.message);
+    throw err;
+  }
   const config = await readConfig();
   const apiUrl = config.url;
 
