@@ -1,5 +1,7 @@
 # dumps.sh
 
+<img src="dumps_mark.png" alt="dumps.sh" height="48">
+
 **CLI-first pastebin for DevOps.** From the terminal to a link — format preserved, secrets not leaked.
 
 ```bash

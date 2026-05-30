@@ -9,6 +9,7 @@ import { handleGetView, handleGetRaw } from "./handlers/get.js";
 import { handleDelete } from "./handlers/delete.js";
 import { handleHealth } from "./handlers/health.js";
 import { securityHeaders } from "./handlers/shared.js";
+import { ICON_PNG_BASE64 } from "./icon.js";
 
 // ---------------------------------------------------------------------------
 // Environment bindings interface — must match wrangler.toml exactly.
@@ -34,6 +35,19 @@ export default {
       // GET /healthz
       if (method === "GET" && pathname === "/healthz") {
         return handleHealth();
+      }
+
+      // GET /icon.png — brand mark (embedded, no external dependency)
+      if (method === "GET" && pathname === "/icon.png") {
+        const bytes = Uint8Array.from(atob(ICON_PNG_BASE64), (c) => c.charCodeAt(0));
+        return new Response(bytes, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000, immutable",
+            "X-Content-Type-Options": "nosniff",
+          },
+        });
       }
 
       // POST / — create paste
@@ -106,7 +120,9 @@ function landingPage(): Response {
   *{box-sizing:border-box}
   body{font-family:'SF Mono',ui-monospace,monospace;background:#111;color:#d4d4d4;margin:0;padding:0;min-height:100vh;display:flex;flex-direction:column}
   main{max-width:680px;margin:0 auto;padding:72px 24px 80px;flex:1}
-  .logo{font-size:1.4rem;font-weight:700;color:#fff;margin:0 0 8px;letter-spacing:-.5px}
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .brand img{height:36px;width:auto}
+  .logo{font-size:1.4rem;font-weight:700;color:#fff;margin:0;letter-spacing:-.5px}
   .logo em{color:#c0392b;font-style:normal}
   .tagline{color:#444;font-size:0.8rem;margin:0 0 56px;line-height:1.6}
   .section{margin-bottom:36px}
@@ -124,7 +140,10 @@ function landingPage(): Response {
 </head>
 <body>
 <main>
-  <h1 class="logo"><em>dumps</em>.sh</h1>
+  <div class="brand">
+    <img src="/icon.png" alt="dumps.sh mark" width="75" height="36">
+    <h1 class="logo"><em>dumps</em>.sh</h1>
+  </div>
   <p class="tagline">pastebin CLI-first · no account · ephemeral by default · secrets masked</p>
 
   <div class="section">
@@ -216,7 +235,7 @@ function landingPage(): Response {
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
       "Content-Security-Policy":
-        "default-src 'none'; style-src 'unsafe-inline'",
+        "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'",
       "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
       "X-Frame-Options": "DENY",
       "X-Robots-Tag": "noindex",

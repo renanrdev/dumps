@@ -18,7 +18,7 @@ export function htmlSecurityHeaders(): Record<string, string> {
     "Referrer-Policy": "no-referrer",
     // Allow inline styles and scripts strictly limited to the page itself.
     "Content-Security-Policy":
-      "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src data:",
+      "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Frame-Options": "DENY",
   };

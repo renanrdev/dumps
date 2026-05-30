@@ -104,15 +104,16 @@ function notFoundPage(): Response {
   .code{font-size:5rem;font-weight:700;color:#1e1e1e;letter-spacing:-2px;line-height:1}
   .code span{color:#c0392b}
   .msg{color:#555;font-size:0.85rem}
-  a{color:#c0392b;text-decoration:none;font-size:0.8rem;border:1px solid #2a2a2a;padding:4px 12px;border-radius:4px;transition:border-color .15s}
+  a{display:inline-flex;align-items:center;gap:8px;color:#c0392b;text-decoration:none;font-size:0.8rem;border:1px solid #2a2a2a;padding:4px 12px;border-radius:4px;transition:border-color .15s}
   a:hover{border-color:#c0392b}
+  a img{height:16px;width:auto;opacity:.7}
 </style>
 </head>
 <body>
 <div class="box">
   <div class="code"><span>4</span>0<span>4</span></div>
   <div class="msg">paste not found or has expired</div>
-  <a href="/">← dumps.sh</a>
+  <a href="/"><img src="/icon.png" alt="">dumps.sh</a>
 </div>
 </body>
 </html>`;
@@ -149,7 +150,8 @@ function renderViewPage(
   *{box-sizing:border-box}
   body{font-family:'SF Mono',ui-monospace,monospace;background:#111;color:#d4d4d4;margin:0;padding:0;font-size:13px}
   header{background:#151515;border-bottom:1px solid #1e1e1e;padding:9px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:10}
-  .logo{color:#fff;font-weight:600;font-size:0.9rem;text-decoration:none;letter-spacing:.3px;flex-shrink:0}
+  .logo{color:#fff;font-weight:600;font-size:0.9rem;text-decoration:none;letter-spacing:.3px;flex-shrink:0;display:flex;align-items:center;gap:10px}
+  .logo img{height:22px;width:auto}
   .logo em{color:#c0392b;font-style:normal}
   .meta{color:#444;font-size:0.72rem;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
   .badge{background:#181818;border:1px solid #222;border-radius:3px;padding:1px 6px;font-size:0.68rem}
@@ -178,7 +180,7 @@ function renderViewPage(
 </head>
 <body>
 <header>
-  <a class="logo" href="/"><em>dumps</em>.sh</a>
+  <a class="logo" href="/"><img src="/icon.png" alt="dumps.sh" width="46" height="22"><em>dumps</em>.sh</a>
   <div class="meta">
     <span class="badge lang">${escapeHtml(meta.detected_lang)}</span>
     <span>${lineCount} lines</span>
